@@ -11,7 +11,7 @@ class ResourceItem(scrapy.Item):
     total_year = scrapy.Field()
 
 
-class Department(scrapy.Item):
+class DepartmentItem(scrapy.Item):
     cnpj = scrapy.Field()
     name = scrapy.Field()
 

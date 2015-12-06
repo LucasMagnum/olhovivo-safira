@@ -4,7 +4,7 @@ import scrapy
 
 from scrapy.selector import Selector
 
-from crawler.items import ResourceItem, Department
+from crawler.items import ResourceItem, DepartmentItem
 
 
 class PageConfig(object):
@@ -38,8 +38,17 @@ class ResourceSpider(scrapy.Spider):
             yield scrapy.Request(response.urljoin(item['action_link']),
                                  callback=self.parse_department)
 
+    def parse_department(self, response):
+        selector = Selector(response)
+
+        for row in selector.xpath(PageConfig.table_rows)[1:]:
+            columns = row.xpath('td')
+
+            item = DepartmentItem()
+            item['cnpj'] = self.extract(columns[0], 'a/text()')
+            item['name'] = self.extract(columns[1], 'text()')
+
+            yield item
+
     def extract(self, item, xpath):
         return item.xpath('normalize-space({})'.format(xpath)).extract()[0]
-
-    def parse_department(self, response):
-        pass
