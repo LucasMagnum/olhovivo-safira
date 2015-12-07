@@ -4,7 +4,7 @@ import scrapy
 
 from scrapy.selector import Selector
 
-from crawler.items import ResourceItem, DepartmentItem
+from crawler.items import ResourceItem
 
 
 class PageConfig(object):
@@ -29,26 +29,27 @@ class ResourceSpider(scrapy.Spider):
 
             item = ResourceItem()
             item['category'] = self.extract(columns[0], 'text()')
-            item['action'] = self.extract(columns[1], 'a/text()')
-            item['action_link'] = self.extract(columns[1], 'a/@href')
-            item['language_person'] = self.extract(columns[2], 'text()')
+            item['description'] = self.extract(columns[1], 'a/text()')
             item['total_year'] = self.extract(columns[3], 'text()')
 
-            yield item
-            yield scrapy.Request(response.urljoin(item['action_link']),
-                                 callback=self.parse_department)
+            resource_link = self.extract(columns[1], 'a/@href')
+
+            request = scrapy.Request(response.urljoin(resource_link),
+                                     callback=self.parse_department)
+            request.meta['resource_item'] = item
+            yield request
 
     def parse_department(self, response):
+        resource_item = response.meta['resource_item']
         selector = Selector(response)
 
         for row in selector.xpath(PageConfig.table_rows)[1:]:
             columns = row.xpath('td')
 
-            item = DepartmentItem()
-            item['cnpj'] = self.extract(columns[0], 'a/text()')
-            item['name'] = self.extract(columns[1], 'text()')
+            resource_item['department_cnpj'] = self.extract(columns[0], 'a/text()')
+            resource_item['department_name'] = self.extract(columns[1], 'text()')
 
-            yield item
+            yield resource_item
 
     def extract(self, item, xpath):
         return item.xpath('normalize-space({})'.format(xpath)).extract()[0]

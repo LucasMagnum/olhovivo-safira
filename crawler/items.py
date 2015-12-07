@@ -5,15 +5,13 @@ import scrapy
 
 class ResourceItem(scrapy.Item):
     category = scrapy.Field()
-    action = scrapy.Field()
-    action_link = scrapy.Field()
-    language_person = scrapy.Field()
+    description = scrapy.Field()
     total_year = scrapy.Field()
 
+    department_cnpj = scrapy.Field()
+    department_name = scrapy.Field()
 
-class DepartmentItem(scrapy.Item):
-    cnpj = scrapy.Field()
-    name = scrapy.Field()
+    resources_by_month = scrapy.Field()
 
 
 class PersonItem(scrapy.Item):
