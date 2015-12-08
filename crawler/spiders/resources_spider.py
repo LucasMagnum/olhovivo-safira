@@ -49,7 +49,29 @@ class ResourceSpider(scrapy.Spider):
             resource_item['department_cnpj'] = self.extract(columns[0], 'a/text()')
             resource_item['department_name'] = self.extract(columns[1], 'text()')
 
-            yield resource_item
+            link_details = self.extract(columns[0], 'a/@href')
+
+            request = scrapy.Request(response.urljoin(link_details),
+                                     callback=self.parse_resources_by_month)
+            request.meta['resource_item'] = resource_item
+            yield request
+
+    def parse_resources_by_month(self, response):
+        resource_item = response.meta['resource_item']
+        selector = Selector(response)
+
+        resources_by_month = []
+
+        for row in selector.xpath(PageConfig.table_rows)[1:]:
+            columns = row.xpath('td')
+            resource = {
+                'month': self.extract(columns[0], 'text()'),
+                'value': self.extract(columns[5], 'text()'),
+            }
+            resources_by_month.append(resource)
+
+        resource_item['resources_by_month'] = resources_by_month
+        yield resource_item
 
     def extract(self, item, xpath):
         return item.xpath('normalize-space({})'.format(xpath)).extract()[0]
