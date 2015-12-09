@@ -5,7 +5,7 @@ from collections import defaultdict
 
 class GroupResourcesByMonth(object):
     def process_item(self, item, spider):
-        resources_by_month = item['resources_by_month']
+        resources_by_month = item.get('resources_by_month', [])
 
         grouped_resources = defaultdict(float)
 

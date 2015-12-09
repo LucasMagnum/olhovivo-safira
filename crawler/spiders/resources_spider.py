@@ -1,5 +1,8 @@
 # coding: utf-8
 
+from urllib import urlencode
+from urllib2 import urlparse
+
 import scrapy
 
 from scrapy.selector import Selector
@@ -12,6 +15,11 @@ class PageConfig(object):
     resources_url = '/PortalTransparenciaListaAcoes.asp?Exercicio=2015&SelecaoUF=1&SiglaUF=MG&CodMun=5259'
 
     table_rows = '//*[@id="listagem"]/table/tr'
+    paginate_info = '//*[@id="paginacao"]/p[1]/text()'
+
+    ignored_details = [
+        u'8442 - Transfer\xeancia de Renda Diretamente \xe0s Fam\xedlias em Condi\xe7\xe3o de Pobreza e Extrema Pobreza (Lei n\xba 10.836, de 2004)'
+    ]
 
 
 class ResourceSpider(scrapy.Spider):
@@ -34,10 +42,18 @@ class ResourceSpider(scrapy.Spider):
 
             resource_link = self.extract(columns[1], 'a/@href')
 
-            request = scrapy.Request(response.urljoin(resource_link),
-                                     callback=self.parse_department)
-            request.meta['resource_item'] = item
-            yield request
+            # For while ignore "Bolsa Familia"
+            if item['description'] in PageConfig.ignored_details:
+                yield item
+            else:
+                request = scrapy.Request(response.urljoin(resource_link),
+                                         callback=self.parse_department)
+                request.meta['resource_item'] = item
+                yield request
+
+        next_page_link = self.get_next_page_link(response)
+        if next_page_link:
+            yield scrapy.Request(response.urljoin(next_page_link), callback=self.parse)
 
     def parse_department(self, response):
         resource_item = response.meta['resource_item']
@@ -57,7 +73,7 @@ class ResourceSpider(scrapy.Spider):
             yield request
 
     def parse_resources_by_month(self, response):
-        resource_item = response.meta['resource_item']
+        item = response.meta['resource_item']
         selector = Selector(response)
 
         resources_by_month = []
@@ -70,8 +86,40 @@ class ResourceSpider(scrapy.Spider):
             }
             resources_by_month.append(resource)
 
-        resource_item['resources_by_month'] = resources_by_month
-        yield resource_item
+        item['resources_by_month'] = item.get('resources_by_month', []) + resources_by_month
+
+        next_page_link = self.get_next_page_link(response)
+        if next_page_link:
+            request = scrapy.Request(response.urljoin(next_page_link),
+                                     callback=self.parse_resources_by_month)
+            request.meta['resource_item'] = item
+            yield request
+        else:
+            yield item
+
+    def get_next_page_link(self, response):
+        """
+            >> page_info = u"Página 1/2"
+            >> paginate_index = "1/1"
+            >> all_pages_visited = paginate_index == paginate_index[::-1]
+
+            # change querystring to include +1 in `Pagina`
+            >> query_params['Pagina'] = int(query_params.get('Pagina', 1))
+        """
+        page_info = self.extract(response, PageConfig.paginate_info)
+        page_index = page_info.split()[1]
+
+        all_pages_visited = page_index == page_index[::-1]
+
+        if not all_pages_visited:
+            scheme, netloc, path, query_string, fragment = urlparse.urlsplit(response.url)
+            query_params = dict(urlparse.parse_qsl(query_string))
+
+            # Update page number
+            query_params['Pagina'] = int(query_params.get('Pagina', 1)) + 1
+            new_querystring = urlencode(query_params, doseq=True)
+
+            return urlparse.urlunsplit((scheme, netloc, path, new_querystring, fragment))
 
     def extract(self, item, xpath):
         return item.xpath('normalize-space({})'.format(xpath)).extract()[0]
