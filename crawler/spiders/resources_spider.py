@@ -8,11 +8,18 @@ import scrapy
 from scrapy.selector import Selector
 
 from crawler.items import ResourceItem
+from crawler.settings import RESOURCES_CONFIGS
 
 
 class PageConfig(object):
     host = 'http://www.portaltransparencia.gov.br'
-    resources_url = '/PortalTransparenciaListaAcoes.asp?Exercicio=2015&SelecaoUF=1&SiglaUF=MG&CodMun=5259'
+    path = '/PortalTransparenciaListaAcoes.asp'
+    params = {
+        'Exercicio': RESOURCES_CONFIGS['ano'],
+        'SelecaoUF': RESOURCES_CONFIGS['uf'],
+        'SiglaUF': RESOURCES_CONFIGS['uf_sigla'],
+        'CodMun': RESOURCES_CONFIGS['municipio'],
+    }
 
     table_rows = '//*[@id="listagem"]/table/tr'
     paginate_info = '//*[@id="paginacao"]/p[1]/text()'
@@ -21,12 +28,17 @@ class PageConfig(object):
         u'8442 - Transfer\xeancia de Renda Diretamente \xe0s Fam\xedlias em Condi\xe7\xe3o de Pobreza e Extrema Pobreza (Lei n\xba 10.836, de 2004)'
     ]
 
+    @classmethod
+    def start_url(cls):
+        return '{host}{path}?{params}'.format(host=cls.host, path=cls.path,
+                                              params=urlencode(cls.params))
+
 
 class ResourceSpider(scrapy.Spider):
     name = 'resources'
     allowed_domains = ['portaltransparencia.gov.br']
     start_urls = [
-        '{}{}'.format(PageConfig.host, PageConfig.resources_url)
+        PageConfig.start_url()
     ]
 
     def parse(self, response):
