@@ -24,9 +24,7 @@ func ParseResources(path string) ([]Resource) {
     json_resources := []map[string]string{}
     json.Unmarshal(data, &json_resources)
 
-    for index := range json_resources {
-        json_resource := json_resources[index]
-
+    for _, json_resource := range json_resources {
         category := json_resource["category"]
         total_year, _ := CleanValue(json_resource["total_year"])
 
@@ -38,17 +36,21 @@ func ParseResources(path string) ([]Resource) {
 }
 
 // GroupByCategory receive the resources list and group values by category
-func GroupByCategory(resources []Resource) (map[string]float64){
+func GroupByCategory(resources []Resource) ([]Resource){
     resourcesByCategory := map[string]float64{}
 
-    for index := range resources {
-        resource := resources[index]
-
+    for _, resource := range resources {
         resourceValue, _ := resourcesByCategory[resource.Category]
         resourcesByCategory[resource.Category] = resourceValue + resource.TotalYear
     }
 
-    return resourcesByCategory
+    resourcesArray := []Resource{}
+
+    for category, totalYear := range resourcesByCategory {
+        resourcesArray = append(resourcesArray, Resource{category, totalYear})
+    }
+
+    return resourcesArray
 }
 
 // CleanValue is a helper function to parse string into float format
