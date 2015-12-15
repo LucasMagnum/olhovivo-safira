@@ -1,19 +1,11 @@
 package main
 
 import (
-    "fmt"
-    "olhovivo/parse"
-    "path/filepath"
+    "net/http"
+    "olhovivo/api"
 )
 
-var RESOURCES_FILE, _ = filepath.Abs("downloads/resources.json")
-
 func main(){
-    fmt.Println(RESOURCES_FILE)
-    resources := parse.GroupByCategory(parse.ParseResources(RESOURCES_FILE))
-
-    for category, totalYear := range resources {
-        fmt.Printf("Categoria: %s, Total ano: %0.2f \n", category, totalYear)
-    }
-
+    http.HandleFunc("/", api.ResourcesList)
+    http.ListenAndServe(":5000", nil)
 }

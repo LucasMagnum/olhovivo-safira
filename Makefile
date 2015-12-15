@@ -1,3 +1,5 @@
+GO_TEST=go test olhovivo/ olhovivo/parse olhovivo/api -v
+
 clean:
 	@find . -name "*.pyc" | xargs rm -rf
 	@find . -name "*.pyo" | xargs rm -rf
@@ -10,6 +12,8 @@ docs:
 	godoc --http=:6060 --play=true -v=true
 
 run:
+	go install olhovivo/parse
+	go install olhovivo/api
 	go run main.go
 
 save-resources:
@@ -20,7 +24,7 @@ setup:
 	sudo apt-get install golang-go.tools
 
 test:
-	go test olhovivo/ olhovivo/parse
+	$(GO_TEST)
 
 test-benchmark:
-	go test olhovivo/parse olhovivo/ -bench=.
+	$(GO_TEST) -bench=.
