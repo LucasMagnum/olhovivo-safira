@@ -3,7 +3,7 @@ package api
 import (
     "encoding/json"
     "net/http"
-    "olhovivo/parse"
+    "olhovivo/parser"
     "path/filepath"
 )
 
@@ -12,7 +12,7 @@ var RESOURCES_FILE, _ = filepath.Abs("downloads/resources.json")
 
 // ResourceList returns resource in json format grouped by category
 func ResourceList(rw http.ResponseWriter, r *http.Request) {
-    resources := parse.GroupByCategory(parse.ParseResources(RESOURCES_FILE))
+    resources := parser.GroupByCategory(parser.ParseResources(RESOURCES_FILE))
     jsonResponse, err := json.Marshal(resources)
 
     if err != nil {

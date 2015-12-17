@@ -6,6 +6,8 @@ import (
 )
 
 func main(){
-    http.HandleFunc("/", api.ResourcesList)
+
+    http.HandleFunc("/api/resources", api.ResourceList)
+    http.Handle("/", http.FileServer(http.Dir("public")))
     http.ListenAndServe(":5000", nil)
 }

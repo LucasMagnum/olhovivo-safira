@@ -1,21 +1,21 @@
-package parse_test
+package parser_test
 
 import (
-    "olhovivo/parse"
+    "olhovivo/parser"
     "testing"
 )
 
 
 func BenchmarkParseResources(b *testing.B){
     for i := 0; i < b.N; i++ {
-        parse.ParseResources(RESOURCES_FILE)
+        parser.ParseResources(RESOURCES_FILE)
     }
 }
 
 func BenchmarkGroupByCategory(b *testing.B){
-    resources := parse.ParseResources(RESOURCES_FILE)
+    resources := parser.ParseResources(RESOURCES_FILE)
 
     for i := 0; i < b.N; i++ {
-        parse.GroupByCategory(resources)
+        parser.GroupByCategory(resources)
     }
 }

@@ -1,18 +1,15 @@
-GO_TEST=go test olhovivo/ olhovivo/parse olhovivo/api -v
+GO_TEST=go test olhovivo/ olhovivo/parser olhovivo/api -v
 
 clean:
-	@find . -name "*.pyc" | xargs rm -rf
-	@find . -name "*.pyo" | xargs rm -rf
-	@find . -name "__pycache__" -type d | xargs rm -rf
-	rm *.json
 	rm olhovivo
+	go clean
 
 docs:
 	gnome-open http://127.0.0.1:6060/pkg/olhovivo/
 	godoc --http=:6060 --play=true -v=true
 
 run:
-	go install olhovivo/parse
+	go install olhovivo/parser
 	go install olhovivo/api
 	go run main.go
 
