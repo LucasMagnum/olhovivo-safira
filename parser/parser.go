@@ -37,11 +37,10 @@ func ParseResources(path string) ([]Resource) {
 
 // GroupByCategory receive the resources list and group values by category
 func GroupByCategory(resources []Resource) ([]Resource){
-    resourcesByCategory := map[string]float64{}
+    resourcesByCategory := make(map[string]float64)
 
     for _, resource := range resources {
-        resourceValue, _ := resourcesByCategory[resource.Category]
-        resourcesByCategory[resource.Category] = resourceValue + resource.TotalYear
+        resourcesByCategory[resource.Category] += resource.TotalYear
     }
 
     resourcesArray := []Resource{}
