@@ -7,8 +7,8 @@ import scrapy
 
 from scrapy.selector import Selector
 
-from crawler.items import ResourceItem
-from crawler.settings import RESOURCES_CONFIGS
+from config.items import ResourceItem
+from config.settings import RESOURCES_CONFIGS
 
 
 class PageConfig(object):
